@@ -1,0 +1,53 @@
+---
+description: Naming and structure conventions for the Telegram Weather Bot Python files
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Bot Conventions
+
+## Handler Naming
+
+All Telegram handler functions follow the pattern `handle_<command>` or `handle_<intent>`:
+
+```python
+# ✅ GOOD
+async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: ...
+async def handle_weather(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: ...
+
+# ❌ BAD
+async def start(update, ctx): ...
+async def weather_handler(update, ctx): ...
+```
+
+## Weather Formatting
+
+All weather data sent to the user must go through `format_weather()` in `weather.py`. Never construct the reply string inline inside a handler:
+
+```python
+# ✅ GOOD
+text = format_weather(data)
+await update.message.reply_text(text)
+
+# ❌ BAD
+await update.message.reply_text(f"Temp: {data['main']['temp']}°C")
+```
+
+## Environment Variable Keys
+
+Use exactly these keys in `.env` and `config.py`:
+
+| Key | Purpose |
+|-----|---------|
+| `BOT_TOKEN` | Telegram Bot API token from @BotFather |
+| `WEATHERBIT_API_KEY` | Weatherbit API key (weatherbit.io) |
+| `WEBHOOK_URL` | Public HTTPS URL for webhook mode (e.g. `https://yourdomain.com`) |
+| `PORT` | Port for the webhook ASGI server (default `8443`) |
+
+## Module Responsibilities
+
+- `config.py` — reads env vars, validates they are set, exports constants
+- `weather.py` — all Weatherbit logic, `get_weather()` + `format_weather()`
+- `handlers.py` — all PTB handler functions, imports from `weather.py`
+- `bot.py` — polling entry point, imports from `handlers.py`
+- `webhook_server.py` — webhook entry point, imports from `handlers.py`

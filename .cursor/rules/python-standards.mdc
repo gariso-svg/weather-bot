@@ -1,0 +1,52 @@
+---
+description: Core Python async standards for the Telegram Weather Bot project
+alwaysApply: true
+---
+
+# Python Standards
+
+## Async/Await
+
+All I/O-bound functions must be `async`:
+
+```python
+# ✅ GOOD
+async def get_weather(city: str) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(URL, params={"q": city})
+
+# ❌ BAD
+def get_weather(city: str) -> dict:
+    return requests.get(URL, params={"q": city}).json()
+```
+
+## Secrets
+
+Secrets are loaded exclusively from environment variables — never hardcoded:
+
+```python
+# ✅ GOOD
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# ❌ BAD
+BOT_TOKEN = "1234567890:ABCdef..."
+```
+
+## External HTTP Calls
+
+Every outbound HTTP call must be wrapped in `try/except` and return a user-friendly error string on failure:
+
+```python
+# ✅ GOOD
+try:
+    response = await client.get(url, params=params, timeout=10)
+    response.raise_for_status()
+except httpx.HTTPStatusError as e:
+    return None, f"Weather service error: {e.response.status_code}"
+except httpx.RequestError:
+    return None, "Could not reach the weather service. Try again later."
+```
+
+## Imports
+
+Standard library → third-party → local, each group separated by a blank line.

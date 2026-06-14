@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "Write|EditNotebook",
+        "command": ".cursor/hooks/validate-env.sh",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "matcher": "curl|wget|pip install",
+        "command": ".cursor/hooks/approve-network.sh",
+        "timeout": 15,
+        "failClosed": false
+      }
+    ]
+  }
+}
